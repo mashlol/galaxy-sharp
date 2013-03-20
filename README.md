@@ -10,7 +10,7 @@ This example trigger will greet the player by name if he types "hello" in any se
 
 ```C
 Trigger onChatMessage(c_playerAny, "hello", false) {
-    bool actions(Player player, string message) {
+    function actions(Player player, string message) {
         print("Hello, " + player.getName());
     }
 }
@@ -24,6 +24,9 @@ Player p = Players.getPlayer(1);
 print("Player " + p.getName() + " has " + p.getUnits().length + " units");
 print("There are a total of " + Players.length + " players in the game.");
 print("There are a total of " + Units.length + " units on the map.");
+for (Unit u in p.getUnits()) {
+	print(u.getName() + " waves hello to " + p.getName() + "!");
+}
 ```
 
 # Installing
