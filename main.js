@@ -8,5 +8,9 @@ fs.readFile(args[0], {encoding: "utf8"}, function (err, data) {
     if (err) {
         throw err;
     }
-    console.log(gs.compile(data));
+    try {
+        console.log(gs.compile(data));
+    } catch (e) {
+        console.log ("Compilation Error: " + e.message);
+    }
 });
