@@ -6,7 +6,7 @@ The project goals are similar to Galaxy++, except it will not be an editor, only
 # Triggers
 Triggers are overly complex in Galaxy, so one of the goals of Galaxy Sharp is to reduce this complexity.  A trigger will be defined with the keyword Trigger, followed by the type of event the trigger will handle.  Each trigger type will have a different set of parameters passed to it to make life easier.
 
-This example trigger will greet the player by name if he types "hello" in any sentence in game. 
+This example trigger will greet the player by name if he types "hello" in any sentence in game.
 
 ```C
 Trigger onChatMessage(c_playerAny, "hello", false) {
@@ -30,7 +30,7 @@ for (Unit u in p.getUnits()) {
 ```
 
 # Installing
-Install nodeJS for your platform.  Should be pretty easy on all platforms, but google is your friend if you run into any issues.  Galaxy Sharp is being tested with nodeJS v0.10.0.  
+Install nodeJS for your platform.  Should be pretty easy on all platforms, but google is your friend if you run into any issues.  Galaxy Sharp is being tested with nodeJS v0.10.0.
 
 After you download Galaxy Sharp (for now, git clone only), navigate to the directory and run `npm install` using command prompt/terminal depending on your platform.
 

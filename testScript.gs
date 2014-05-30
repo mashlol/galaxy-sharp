@@ -1,19 +1,11 @@
-// This file is a test Galaxy Sharp file
-int gv_some_global = 0;
+var G = require("./galaxySharp");
 
-void default_galaxy_method(int arg) {
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaDebug, "Default Galaxy works too!");
-}
+G.start();
 
-Trigger onChatMessage(c_playerAny, "-hello", false) {
-    function actions(Player player, string message) {
-        print("Hello");
-    }
-}
+G.Trigger.on("chatMessage", "-hello", function(player, msg) {
+	var x = new G.Player(1);
+	G.print(x.getName());
+	G.print(player.getName());
+});
 
-Trigger onMapInit() {
-    function actions() {
-        // You can call default methods as well!
-        default_galaxy_method();
-    }
-}
+G.end();
