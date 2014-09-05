@@ -1,0 +1,21 @@
+include "TriggerLibs/NativeLib"
+trigger x_0_trigger;
+bool x_0_trigger_Func(bool testConds, bool runActions) {
+int x_1 = EventPlayer();
+string x_2 = EventChatMessage(false);
+int x_3 = 1;
+text x_4 = PlayerName(x_3);
+text x_5 = PlayerName(x_1);
+UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, x_4);
+UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, x_5);
+UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText(x_2));
+return true;
+}
+void x_0_trigger_Init() {
+x_0_trigger = TriggerCreate("x_0_trigger_Func");
+TriggerAddEventChatMessage(x_0_trigger, c_playerAny, "hello", true);
+}
+void InitMap() {
+libNtve_InitLib();
+x_0_trigger_Init();
+}

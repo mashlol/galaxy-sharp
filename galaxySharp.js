@@ -1,25 +1,67 @@
+var TRIGGERS = require("./triggers");
+var FUNCTIONS_TO_TYPES = require("./functionsToTypes");
+var Constants = require("./constants");
+
+var G = {};
+
+var outputGalaxy = function() {
+    console.log.apply(this, arguments);
+};
+
 var uniqueIndex = 0;
 var getUniqueVariableName = function() {
     return "x_" + (uniqueIndex++);
 };
 
-var Trigger = {
-    on: function() {
-        if (arguments[0] == "chatMessage") {
-            var name = getUniqueVariableName();
-            this.triggerNames.push(name);
-            console.log("trigger " + name + "_trigger" + ";");
-            console.log("bool " + name + "_trigger_Func(bool testConds, bool runActions) {");
-            var player = new Player("EventPlayer()");
-            var message = new GalaxyObject("string", "EventChatMessage(false)");
-            arguments[2](player, message);
-            console.log("return true;");
-            console.log("}");
+var override = function(defaults, params) {
+    var result = {};
+    for (var x in defaults) {
+        if (params[x]) {
+            result[x] = params[x];
+        } else {
+            result[x] = defaults[x];
+        }
+    }
+    return result;
+};
 
-            console.log("void " + name + "_trigger_Init() {");
-            console.log(name + "_trigger = TriggerCreate(\"" + name + "_trigger_Func\");");
-            console.log("TriggerAddEventChatMessage(" + name + "_trigger, c_playerAny, \"" + arguments[1] + "\", false);");
-            console.log("}");
+var Trigger = {
+    on: function(triggerName, params, callback) {
+        for (var x in TRIGGERS) {
+            var TRIGGER = TRIGGERS[x];
+            if (x == triggerName) {
+                var name = getUniqueVariableName();
+                this.triggerNames.push(name);
+                outputGalaxy("trigger " + name + "_trigger" + ";");
+                outputGalaxy("bool " + name + "_trigger_Func(bool testConds, bool runActions) {");
+                var args = [];
+                for (var x in TRIGGER.args) {
+                    var argVal = TRIGGER.args[x];
+                    args.push(new G[FUNCTIONS_TO_TYPES[argVal]](argVal));
+                }
+                callback.apply(null, args);
+                outputGalaxy("return true;");
+                outputGalaxy("}");
+
+                outputGalaxy("void " + name + "_trigger_Init() {");
+                outputGalaxy(name + "_trigger = TriggerCreate(\"" + name + "_trigger_Func\");");
+
+                params = override(TRIGGER.defaultParams, params);
+
+                var paramString = "";
+                for (var x=0; x<TRIGGER.paramsOrder.length-1; x++) {
+                    var param = TRIGGER.paramsOrder[x];
+                    if (typeof params[param] == "string") {
+                        paramString += "\"" + params[param] + "\", ";
+                    } else {
+                        paramString += params[param] + ", ";
+                    }
+                }
+                paramString += params[TRIGGER.paramsOrder[TRIGGER.paramsOrder.length-1]]
+                outputGalaxy(TRIGGER.name + "(" + name + "_trigger, " + paramString + ");");
+                outputGalaxy("}");
+                return;
+            }
         }
     },
     triggerNames: []
@@ -28,7 +70,15 @@ var Trigger = {
 var GalaxyObject = function(type, value) {
     this.name = getUniqueVariableName();
     this.type = type;
-    console.log(type + " " + this.name + " = " + value + ";");
+    outputGalaxy(type + " " + this.name + " = " + value + ";");
+};
+
+GalaxyObject.prototype._getGalaxyName = function() {
+    return this.name;
+};
+
+GalaxyObject.prototype._getGalaxyType = function() {
+    return this.type;
 };
 
 var Player = function(value) {
@@ -39,27 +89,56 @@ Player.prototype.getName = function() {
     return new GalaxyObject("text", "PlayerName(" + this.intObject.name + ")");
 };
 
+Player.prototype._getGalaxyName = function() {
+    return this.intObject._getGalaxyName();
+};
+
+Player.prototype._getGalaxyType = function() {
+    return this.intObject._getGalaxyType();
+}
+
+var _String = function(value) {
+    this.stringObject = new GalaxyObject("string", value);
+};
+
+_String.prototype._getGalaxyName = function() {
+    return this.stringObject._getGalaxyName();
+};
+
+_String.prototype._getGalaxyType = function() {
+    return this.stringObject._getGalaxyType();
+}
+
 var print = function(textObject) {
-    console.log("UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, " + textObject.name + ");");
+    if (textObject._getGalaxyType() == "text") {
+        outputGalaxy("UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, " + textObject._getGalaxyName() + ");");
+    } else if (textObject._getGalaxyType() == "string") {
+        outputGalaxy("UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText(" + textObject._getGalaxyName() + "));");
+    }
 };
 
 var start = function() {
-    console.log("include \"TriggerLibs/NativeLib\"");
+    outputGalaxy("include \"TriggerLibs/NativeLib\"");
 };
 
 var end = function() {
-    console.log("void InitMap() {");
-    console.log("libNtve_InitLib();");
+    outputGalaxy("void InitMap() {");
+    outputGalaxy("libNtve_InitLib();");
     for (var x in Trigger.triggerNames) {
-        console.log(Trigger.triggerNames[x] + "_trigger_Init();");
+        outputGalaxy(Trigger.triggerNames[x] + "_trigger_Init();");
     }
-    console.log("}");
+    outputGalaxy("}");
 };
 
-module.exports = {
-	Trigger: Trigger,
-    Player: Player,
-    print: print,
-    start: start,
-    end: end
-}
+G.Trigger = Trigger;
+G.Player = Player;
+G.GalaxyObject = GalaxyObject;
+G.String = _String;
+G.print = print;
+G.start = start;
+G.end = end;
+G.c = Constants;
+G.Constants = Constants;
+G.C = Constants;
+
+module.exports = G;
